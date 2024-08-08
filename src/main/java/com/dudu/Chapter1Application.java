@@ -132,6 +132,7 @@ public class Chapter1Application {
 	private String formatDuration(long durationMillis) {
 		long seconds = durationMillis / 1000;
 		long minutes = seconds / 60;
+		
 		seconds %= 60;
 
 		return minutes + " 分钟 " + seconds + " 秒";
