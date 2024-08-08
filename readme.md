@@ -11,7 +11,7 @@
 #### 示例：
 
 ```bash
-curl "http://localhost:8080/loadCPU?du=10&threshold=75&startThreshold=40"
+curl "http://127.0.0.1:8591/loadCPU?du=10&threshold=75&startThreshold=40"
 ```
 
 此请求将启动对CPU使用率的监控，持续时间为 `10` 分钟。当CPU使用率低于 `40%` 时开始创建字符串，当使用率超过 `75%` 时停止创建。
@@ -31,7 +31,7 @@ curl "http://localhost:8080/loadCPU?du=10&threshold=75&startThreshold=40"
 #### 示例：
 
 ```bash
-curl "http://localhost:8080/loadMemory?du=10&threshold=75&startThreshold=40"
+curl "http://127.0.0.1:8591/loadMemory?du=10&threshold=75&startThreshold=40"
 ```
 
 此请求将启动对内存使用情况的监控，持续时间为 `10` 分钟。当内存使用率低于 `40%` 时开始创建字符串，当使用率超过 `75%` 时停止创建。
@@ -51,11 +51,10 @@ curl "http://localhost:8080/loadMemory?du=10&threshold=75&startThreshold=40"
 #### 示例：
 
 ```bash
-curl "http://localhost:8080/loadAll?du=15&threshold=80&startThreshold=45"
+curl "http://127.0.0.1:8591/loadAll?du=15&threshold=80&startThreshold=45"
 ```
 
 此请求将启动对CPU和内存使用情况的监控，持续时间为 `15` 分钟。当CPU或内存使用率低于 `45%` 时开始创建字符串，当使用率超过 `80%` 时停止创建。
 
 ---
 
-以上是如何使用这些接口的示例和说明。你可以根据实际情况调整参数，来适应不同的监控需求。
