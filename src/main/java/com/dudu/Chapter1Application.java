@@ -1,5 +1,6 @@
 package com.dudu;
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import com.sun.management.OperatingSystemMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -63,24 +64,36 @@ public class Chapter1Application {
 	}
 
 	private void createStrings() {
+		int workload = 1000; // 提高初始工作量
 		while (!shouldStop.get()) {
 			if (startCreating.get()) {
-				String newString = new String("开始测试");
-				synchronized (stringList) {
-					stringList.add(newString);
+				for (int i = 0; i < workload; i++) {
+					String newString = new String("测试数据 " + i);
+					synchronized (stringList) {
+						stringList.add(newString);
+					}
+				}
+				workload += 500; // 显著增加工作量步长
+				try {
+					Thread.sleep(100); // 减少休眠时间以增加负载
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 				}
 			} else {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					Thread.currentThread().interrupt();
 				}
 			}
 		}
 	}
-
 	private void monitorSystem(String type, int du, int threshold, int startThreshold) {
 		OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		final String ANSI_RESET = "\u001B[0m";
+		final String ANSI_GREEN = "\u001B[32m";
+		final String ANSI_RED = "\u001B[31m";
 
 		try {
 			System.out.println("等待 " + INITIAL_DELAY_SECONDS + " 秒后开始创建字符串并监控系统资源...");
@@ -94,17 +107,18 @@ public class Chapter1Application {
 
 		while (System.currentTimeMillis() < endTime && !shouldStop.get()) {
 			double cpuLoad = osBean.getSystemCpuLoad() * 100;
+			String currentTime = LocalDateTime.now().format(dtf);
 
-			System.out.println("当前 CPU 使用率: " + String.format("%.2f", cpuLoad) + "%");
+			System.out.println("[" + currentTime + "] 当前 CPU 使用率: " + String.format("%.2f", cpuLoad) + "%");
 
 			if (cpuLoad < startThreshold) {
 				if (!startCreating.get()) {
-					System.out.println("CPU 使用率低于 " + startThreshold + "%，开始创建字符串");
+					System.out.println(ANSI_GREEN + "CPU 使用率低于 " + startThreshold + "%，开始创建字符串" + ANSI_RESET);
 					startCreating.set(true);
 				}
 			} else if (cpuLoad > threshold) {
 				if (startCreating.get()) {
-					System.out.println("CPU 使用率超过阈值 " + threshold + "%，停止创建字符串");
+					System.out.println(ANSI_RED + "CPU 使用率超过阈值 " + threshold + "%，停止创建字符串" + ANSI_RESET);
 					clearStringList();
 					startCreating.set(false);
 				}
@@ -119,7 +133,6 @@ public class Chapter1Application {
 
 		stopMonitoring(startTime);
 	}
-
 	private void stopMonitoring(long startTime) {
 		shouldStop.set(true);
 		startCreating.set(false);
