@@ -65,6 +65,7 @@ public class Chapter1Application {
 
 	private void createStrings() {
 		int workload = 1000; // 提高初始工作量
+		int maxWorkload = 1000000; // 大幅提高最大工作量上限
 		while (!shouldStop.get()) {
 			if (startCreating.get()) {
 				for (int i = 0; i < workload; i++) {
@@ -73,15 +74,19 @@ public class Chapter1Application {
 						stringList.add(newString);
 					}
 				}
-				workload += 500; // 显著增加工作量步长
+				// 更快地增加工作量
+				workload = (int) Math.min(workload * 1.2, maxWorkload);
 				try {
-					Thread.sleep(100); // 减少休眠时间以增加负载
+					// 减少休眠时间，但保持最小值
+					long sleepTime = Math.max(1, 100 - (workload / 10000));
+					Thread.sleep(sleepTime);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
 			} else {
+				workload = 1000; // 重置工作量，但保持较高的起始点
 				try {
-					Thread.sleep(100);
+					Thread.sleep(50);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
@@ -125,12 +130,11 @@ public class Chapter1Application {
 			}
 
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(500); // 更频繁地检查CPU使用率
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-
 		stopMonitoring(startTime);
 	}
 	private void stopMonitoring(long startTime) {
