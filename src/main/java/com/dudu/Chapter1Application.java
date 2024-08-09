@@ -15,13 +15,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @SpringBootApplication
 public class Chapter1Application {
+	// 存储生成的字符串列表
 	private List<String> stringList = new ArrayList<>();
+	// 控制监控是否应该停止
 	private AtomicBoolean shouldStop = new AtomicBoolean(false);
+	// 控制是否开始创建字符串
 	private AtomicBoolean startCreating = new AtomicBoolean(false);
+	// 初始延迟时间，单位为秒
 	private static final int INITIAL_DELAY_SECONDS = 5;
+	// 默认的监控阈值
 	private static final int DEFAULT_THRESHOLD = 70;
+	// 默认的启动阈值
 	private static final int DEFAULT_START_THRESHOLD = 50;
 
+	/**
+	 * 监控CPU使用率
+	 * @param du 监控持续时间，单位为分钟
+	 * @param threshold 监控阈值，当CPU使用率超过该值时采取行动
+	 * @param startThreshold 启动阈值，当CPU使用率低于该值时开始创建字符串
+	 * @return 监控的详细信息
+	 */
 	@GetMapping("/loadCPU")
 	public String monitorCPU(
 			@RequestParam(defaultValue = "5") int du,
@@ -30,6 +43,13 @@ public class Chapter1Application {
 		return startMonitoring("CPU", du, threshold, startThreshold);
 	}
 
+	/**
+	 * 监控内存使用率
+	 * @param du 监控持续时间，单位为分钟
+	 * @param threshold 监控阈值，当内存使用率超过该值时采取行动
+	 * @param startThreshold 启动阈值，当内存使用率低于该值时开始创建字符串
+	 * @return 监控的详细信息
+	 */
 	@GetMapping("/loadMemory")
 	public String monitorMemory(
 			@RequestParam(defaultValue = "5") int du,
@@ -38,6 +58,13 @@ public class Chapter1Application {
 		return startMonitoring("Memory", du, threshold, startThreshold);
 	}
 
+	/**
+	 * 同时监控CPU和内存使用率
+	 * @param du 监控持续时间，单位为分钟
+	 * @param threshold 监控阈值，当CPU或内存使用率超过该值时采取行动
+	 * @param startThreshold 启动阈值，当CPU或内存使用率低于该值时开始创建字符串
+	 * @return 监控的详细信息
+	 */
 	@GetMapping("/loadAll")
 	public String monitorAll(
 			@RequestParam(defaultValue = "5") int du,
@@ -46,6 +73,14 @@ public class Chapter1Application {
 		return startMonitoring("All", du, threshold, startThreshold);
 	}
 
+	/**
+	 * 开始监控系统资源
+	 * @param type 监控的系统资源类型（CPU、Memory或All）
+	 * @param du 监控持续时间，单位为分钟
+	 * @param threshold 监控阈值，当对应资源使用率超过该值时采取行动
+	 * @param startThreshold 启动阈值，当对应资源使用率低于该值时开始创建字符串
+	 * @return 监控操作的概述信息
+	 */
 	private String startMonitoring(String type, int du, int threshold, int startThreshold) {
 		resetMonitoringState();
 		Thread creatorThread = new Thread(this::createStrings);
@@ -57,12 +92,18 @@ public class Chapter1Application {
 		return "开始监控" + type + "，持续时间: " + du + " 分钟，阈值: " + threshold + "%，启动阈值: " + startThreshold + "%";
 	}
 
+	/**
+	 * 重置监控状态
+	 */
 	private void resetMonitoringState() {
 		shouldStop.set(false);
 		startCreating.set(false);
 		stringList.clear();
 	}
 
+	/**
+	 * 创建字符串，模拟系统资源消耗
+	 */
 	private void createStrings() {
 		int workload = 1000; // 提高初始工作量
 		int maxWorkload = 1000000; // 大幅提高最大工作量上限
@@ -93,6 +134,14 @@ public class Chapter1Application {
 			}
 		}
 	}
+
+	/**
+	 * 监控系统资源（CPU使用率），根据使用率决定是否创建字符串
+	 * @param type 监控的资源类型
+	 * @param du 监控持续时间，单位为分钟
+	 * @param threshold 监控阈值，当CPU使用率超过该值时采取行动
+	 * @param startThreshold 启动阈值，当CPU使用率低于该值时开始创建字符串
+	 */
 	private void monitorSystem(String type, int du, int threshold, int startThreshold) {
 		OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -137,6 +186,11 @@ public class Chapter1Application {
 		}
 		stopMonitoring(startTime);
 	}
+
+	/**
+	 * 停止监控，清理资源
+	 * @param startTime 监控开始时间，用于计算监控持续时间
+	 */
 	private void stopMonitoring(long startTime) {
 		shouldStop.set(true);
 		startCreating.set(false);
@@ -147,6 +201,9 @@ public class Chapter1Application {
 		System.out.println("程序运行时间: " + formatDuration(duration));
 	}
 
+	/**
+	 * 清空字符串列表，尝试释放内存
+	 */
 	private void clearStringList() {
 		System.out.println("清空字符串列表，释放内存");
 		System.out.println("清空前的列表大小: " + stringList.size());
@@ -155,6 +212,11 @@ public class Chapter1Application {
 		System.out.println("清空后的列表大小: " + stringList.size());
 	}
 
+	/**
+	 * 格式化持续时间
+	 * @param durationMillis 持续时间，单位为毫秒
+	 * @return 格式化的持续时间字符串
+	 */
 	private String formatDuration(long durationMillis) {
 		long seconds = durationMillis / 1000;
 		long minutes = seconds / 60;
