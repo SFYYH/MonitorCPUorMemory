@@ -130,7 +130,7 @@ public class Chapter1Application {
 			}
 
 			try {
-				Thread.sleep(500); // 更频繁地检查CPU使用率
+				Thread.sleep(300); // 更频繁地检查CPU使用率
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
