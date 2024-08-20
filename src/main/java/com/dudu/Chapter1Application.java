@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @SpringBootApplication
 public class Chapter1Application {
+	private List<Double> cpuUsageList = new ArrayList<>();
 	private List<String> stringList = new ArrayList<>();
 	private AtomicBoolean shouldStop = new AtomicBoolean(false);
 	private AtomicBoolean startCreating = new AtomicBoolean(false);
@@ -112,6 +113,7 @@ public class Chapter1Application {
 
 		while (System.currentTimeMillis() < endTime && !shouldStop.get()) {
 			double cpuLoad = osBean.getSystemCpuLoad() * 100;
+			cpuUsageList.add(cpuLoad);  // 用来计算平均占用率
 			String currentTime = LocalDateTime.now().format(dtf);
 
 			System.out.println("[" + currentTime + "] 当前 CPU 使用率: " + String.format("%.2f", cpuLoad) + "%");
@@ -145,6 +147,10 @@ public class Chapter1Application {
 		long duration = endTime - startTime;
 		System.out.println("监控结束");
 		System.out.println("程序运行时间: " + formatDuration(duration));
+		// 计算并打印平均 CPU 使用率
+		double averageCpuUsage = cpuUsageList.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+		System.out.printf("平均 CPU 使用率: %.2f%%\n", averageCpuUsage);
+		cpuUsageList.clear();
 	}
 
 	private void clearStringList() {
